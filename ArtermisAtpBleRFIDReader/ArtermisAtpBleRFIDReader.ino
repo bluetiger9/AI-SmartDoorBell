@@ -32,7 +32,17 @@
 
 #define BLE_PERIPHERAL_NAME "Artemis BLE" // Up to 29 characters
 
+#include <Wire.h>
+#include "SparkFun_Qwiic_Rfid.h"
+
+#define RFID_ADDR 0x7D // Default I2C address
+
+Qwiic_Rfid myRfid(RFID_ADDR);
+
 void setup() {
+
+  // Begin I-squared-C
+  Wire.begin();
 
   SERIAL_PORT.begin(115200);
   delay(1000);
@@ -61,7 +71,6 @@ void setup() {
   NusStart();
 
   SERIAL_PORT.printf("Setup done.");
-
 }
 
 void loop() {
@@ -73,6 +82,17 @@ void loop() {
       //
       update_scheduler_timers();
       wsfOsDispatcher();
+
+      // read RFID
+      String tag = myRfid.getTag(); // <--- blocks here right now
+      if (tag != "") {
+        Serial.print("Tag ID: ");
+        Serial.print(tag);
+
+        float scanTime = myRfid.getPrecReqTime();
+        Serial.print(" Scan Time: ");
+        Serial.println(scanTime);
+      }
 
       //
       // Enable an interrupt to wake us up next time we have a scheduled event.
