@@ -94,6 +94,7 @@ static const appAdvCfg_t tagAdvCfg =
 {
   {15000, 45000,     0},                  /*! Advertising durations in ms */
   {   56,   640,  1824}                   /*! Advertising intervals in 0.625 ms units */
+//  { 400, 400, 400 }
 };
 
 /*! configurable parameters for slave */
@@ -186,6 +187,10 @@ uint8_t tagAdvDataDisc[MAX_ADV_DATA_LEN] = {0};
 void set_adv_name( const char* str ){
   uint8_t indi = 0;
   bool done = false;
+  for (indi = 2; indi < MAX_ADV_DATA_LEN; ++indi) {
+    tagAdvDataDisc[indi] = ' ';
+  }
+  indi = 0;
   do{
     if( *(str+indi) == 0 ){
       done = true;

@@ -48,6 +48,11 @@ void setup() {
   delay(1000);
   SERIAL_PORT.printf("Apollo3 Arduino BLE Example. Compiled: %s\n", __TIME__);
 
+  if(myRfid.begin())
+    Serial.println("Ready to scan some tags!"); 
+  else
+    Serial.println("Could not communicate with Qwiic RFID!"); 
+    
   pinMode(LED_BUILTIN, OUTPUT);
   set_led_low();
 
@@ -73,8 +78,9 @@ void setup() {
   SERIAL_PORT.printf("Setup done.");
 }
 
-void loop() {
+long lastTagTime = -1;
 
+void loop() {
       //SERIAL_PORT.printf("Loop.");
       //
       // Calculate the elapsed time from our free-running timer, and update
@@ -84,14 +90,25 @@ void loop() {
       wsfOsDispatcher();
 
       // read RFID
-      String tag = myRfid.getTag(); // <--- blocks here right now
-      if (tag != "") {
+      String tag = myRfid.getTag();
+      if (tag != "000000") {
         Serial.print("Tag ID: ");
         Serial.print(tag);
 
         float scanTime = myRfid.getPrecReqTime();
         Serial.print(" Scan Time: ");
         Serial.println(scanTime);
+
+        String bleName = "rfid=" + tag + String(BLE_PERIPHERAL_NAME);
+        Serial.println("Set BLE Name: ");
+        Serial.print(bleName);
+        setAdvName(bleName.c_str());
+        lastTagTime = millis();
+        
+      } else if (lastTagTime > 0 && lastTagTime + 5000 < millis()) {
+        Serial.println("Clear BLE Name");
+        lastTagTime = -1;
+        setAdvName(BLE_PERIPHERAL_NAME);        
       }
 
       //
